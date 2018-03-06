@@ -184,6 +184,7 @@ class MinimaxPlayer(IsolationPlayer):
             return False
 
     def min_value(self, game, depth):
+        self.time_check()
         if self.terminal_test(game, depth):
             return self.score(game, self)
         v = float('inf')
@@ -192,6 +193,7 @@ class MinimaxPlayer(IsolationPlayer):
         return v
 
     def max_value(self, game, depth):
+        self.time_check()
         if self.terminal_test(game, depth):
             return self.score(game, self)
         v = float('-inf')
