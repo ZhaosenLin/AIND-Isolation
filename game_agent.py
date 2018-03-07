@@ -297,8 +297,14 @@ class AlphaBetaPlayer(IsolationPlayer):
         else:
             return best_move
         try:
-            for d in range(1, self.search_depth):
-                best_move = self.alphabeta(game, d)
+            d = 1
+            while True:
+                this_move = self.alphabeta(game, d)
+                if this_move == (-1, -1):
+                    return best_move
+                else:
+                    best_move = this_move
+                d += 1
         except SearchTimeout:
             return best_move
         return best_move
