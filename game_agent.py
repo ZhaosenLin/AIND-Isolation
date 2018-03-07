@@ -290,11 +290,17 @@ class AlphaBetaPlayer(IsolationPlayer):
         """
         self.time_left = time_left
 
+        legal_move = game.get_legal_moves()
         best_move = (-1, -1)
+        if len(legal_move) > 0:
+            best_move = legal_move[random.randint(0, len(legal_move) - 1)]
+        else:
+            return best_move
         try:
-            best_move = self.alphabeta(game, self.search_depth - 1)
+            for d in range(1, self.search_depth):
+                best_move = self.alphabeta(game, d)
         except SearchTimeout:
-            pass
+            return best_move
         return best_move
 
     def alphabeta(self, game, depth, alpha=float("-inf"), beta=float("inf")):
@@ -345,7 +351,7 @@ class AlphaBetaPlayer(IsolationPlayer):
         if self.time_left() < self.TIMER_THRESHOLD:
             raise SearchTimeout()
 
-        return max([(self.max_value(game, depth - 1, float('-inf'), float('inf')), m) for m in game.get_legal_moves()])[1]
+        return max([(self.max_value(game, depth, alpha, beta), m) for m in game.get_legal_moves()])[1]
 
     def terminal_test(self, game_state, depth):
         if len(game_state.get_legal_moves()) <= 0 or depth <= 0:
