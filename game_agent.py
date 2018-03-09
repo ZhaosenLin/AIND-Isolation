@@ -36,12 +36,20 @@ def custom_score(game, player):
     """
     if game.is_loser(player):
         return float("-inf")
+
     if game.is_winner(player):
         return float("inf")
-    my_moves = len(game.get_legal_moves(player))
+
+    own_moves = len(game.get_legal_moves(player))
     opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
 
-    return my_moves - opp_moves
+    w, h = game.width / 2., game.height / 2.
+    y, x = game.get_player_location(player)
+    y2, x2 = game.get_player_location(game.get_opponent(player))
+
+    distance_to_center = float((h - y)**2 + (w - x)**2)
+    opp_distance_to_center = float((h - y2)**2 + (w - x2)**2)
+    return float((own_moves - opp_moves) + (opp_distance_to_center - 1.7 * distance_to_center))
 
 
 def custom_score_2(game, player):
@@ -66,8 +74,11 @@ def custom_score_2(game, player):
     float
         The heuristic value of the current game state to the specified player.
     """
-    # TODO: finish this function!
-    raise NotImplementedError
+    if game.is_loser(player):
+        return float("-inf")
+    if game.is_winner(player):
+        return float("inf")
+    return float(len(game.get_legal_moves(player)))
 
 
 def custom_score_3(game, player):
@@ -92,8 +103,14 @@ def custom_score_3(game, player):
     float
         The heuristic value of the current game state to the specified player.
     """
-    # TODO: finish this function!
-    raise NotImplementedError
+    if game.is_loser(player):
+        return float("-inf")
+
+    if game.is_winner(player):
+        return float("inf")
+    own_moves = len(game.get_legal_moves(player))
+    opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
+    return float(own_moves - opp_moves)
 
 
 class IsolationPlayer:
@@ -119,7 +136,7 @@ class IsolationPlayer:
         timer expires.
     """
 
-    def __init__(self, search_depth=3, score_fn=custom_score, timeout=10.):
+    def __init__(self, search_depth=3, score_fn=custom_score, timeout=60.):
         self.search_depth = search_depth
         self.score = score_fn
         self.time_left = None
@@ -249,7 +266,7 @@ class MinimaxPlayer(IsolationPlayer):
 
         all_legal_moves_with_value = [(self.min_value(game.forecast_move(m), depth - 1), m) for m in
                                       game.get_legal_moves()]
-        return max(all_legal_moves_with_value)[1]
+        return max(all_legal_moves_with_value, default=(-1, -1))[1]
 
 
 class AlphaBetaPlayer(IsolationPlayer):
@@ -357,7 +374,7 @@ class AlphaBetaPlayer(IsolationPlayer):
         if self.time_left() < self.TIMER_THRESHOLD:
             raise SearchTimeout()
 
-        return max([(self.max_value(game, depth, alpha, beta), m) for m in game.get_legal_moves()])[1]
+        return max([(self.max_value(game, depth, alpha, beta), m) for m in game.get_legal_moves()], default=(-1, -1))[1]
 
     def terminal_test(self, game_state, depth):
         if len(game_state.get_legal_moves()) <= 0 or depth <= 0:
