@@ -47,8 +47,8 @@ def custom_score(game, player):
     y, x = game.get_player_location(player)
     y2, x2 = game.get_player_location(game.get_opponent(player))
 
-    distance_to_center = float((h - y)**2 + (w - x)**2)
-    opp_distance_to_center = float((h - y2)**2 + (w - x2)**2)
+    distance_to_center = float((h - y) ** 2 + (w - x) ** 2)
+    opp_distance_to_center = float((h - y2) ** 2 + (w - x2) ** 2)
     return float((own_moves - opp_moves) + (opp_distance_to_center - 1.7 * distance_to_center))
 
 
@@ -373,38 +373,48 @@ class AlphaBetaPlayer(IsolationPlayer):
         """
         if self.time_left() < self.TIMER_THRESHOLD:
             raise SearchTimeout()
-
-        return max([(self.max_value(game, depth, alpha, beta), m) for m in game.get_legal_moves()], default=(-1, -1))[1]
+        _, best_move = self.max_value(game, depth, alpha, beta)
+        return best_move
 
     def terminal_test(self, game_state, depth):
-        if len(game_state.get_legal_moves()) <= 0 or depth <= 0:
+        if len(game_state.get_legal_moves()) == 0 or depth == 0:
             return True
         else:
             return False
 
     def max_value(self, game, depth, alpha, beta):
         self.time_check()
+        best_move = (-1, -1)
         if self.terminal_test(game, depth):
-            return self.score(game, self)
+            return self.score(game, self), best_move
         v = float('-inf')
         for m in game.get_legal_moves():
-            v = max(v, self.min_value(game.forecast_move(m), depth - 1, alpha, beta))
+            # v = max(v, self.min_value(game.forecast_move(m), depth - 1, alpha, beta))
+            result = self.min_value(game.forecast_move(m), depth - 1, alpha, beta)
+            if result[0] > v:
+                best_move = m
+                v = result[0]
             if v >= beta:
-                return v
+                return (v, best_move)
             alpha = max(alpha, v)
-        return v
+        return (v, best_move)
 
     def min_value(self, game, depth, alpha, beta):
         self.time_check()
+        best_move = (-1, -1)
         if self.terminal_test(game, depth):
-            return self.score(game, self)
+            return self.score(game, self), best_move
         v = float('inf')
         for m in game.get_legal_moves():
-            v = min(v, self.max_value(game.forecast_move(m), depth - 1, alpha, beta))
+            # v = min(v, self.max_value(game.forecast_move(m), depth - 1, alpha, beta))
+            result = self.max_value(game.forecast_move(m), depth - 1, alpha, beta)
+            if result[0] < v:
+                best_move = m
+                v = result[0]
             if v <= alpha:
-                return v
+                return (v, best_move)
             beta = min(beta, v)
-        return v
+        return (v, best_move)
 
     def time_check(self):
         if self.time_left() < self.TIMER_THRESHOLD:
