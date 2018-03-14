@@ -49,7 +49,7 @@ def custom_score(game, player):
 
     distance_to_center = float((h - y) ** 2 + (w - x) ** 2)
     opp_distance_to_center = float((h - y2) ** 2 + (w - x2) ** 2)
-    return float((own_moves - opp_moves) + (opp_distance_to_center - 1.7 * distance_to_center))
+    return float((own_moves - opp_moves) + (opp_distance_to_center - distance_to_center))
 
 
 def custom_score_2(game, player):
@@ -78,7 +78,9 @@ def custom_score_2(game, player):
         return float("-inf")
     if game.is_winner(player):
         return float("inf")
-    return float(len(game.get_legal_moves(player)))
+    own_moves = len(game.get_legal_moves(player))
+    opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
+    return float((own_moves - opp_moves)**2)
 
 
 def custom_score_3(game, player):
@@ -110,7 +112,7 @@ def custom_score_3(game, player):
         return float("inf")
     own_moves = len(game.get_legal_moves(player))
     opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
-    return float(own_moves - opp_moves)
+    return float(1.7 * own_moves - opp_moves)
 
 
 class IsolationPlayer:
@@ -136,7 +138,7 @@ class IsolationPlayer:
         timer expires.
     """
 
-    def __init__(self, search_depth=3, score_fn=custom_score, timeout=60.):
+    def __init__(self, search_depth=3, score_fn=custom_score, timeout=100.):
         self.search_depth = search_depth
         self.score = score_fn
         self.time_left = None
